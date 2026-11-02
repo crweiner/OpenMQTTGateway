@@ -54,9 +54,16 @@ void MeasureADC() {
     timeadc = millis();
     int val = analogRead(ADC_GPIO);
     int sum_val = val;
+#  if defined(ESP32) && defined(ADC_DIVIDER)
+    // Factory-calibrated reading in mV, corrects the ESP32 ADC's offset and non-linearity
+    uint32_t sum_mvolt = analogReadMilliVolts(ADC_GPIO);
+#  endif
     if (NumberOfReadingsADC > 1) { // add extra measurement for accuracy
       for (int i = 1; i < NumberOfReadingsADC; i++) {
         sum_val += analogRead(ADC_GPIO);
+#  if defined(ESP32) && defined(ADC_DIVIDER)
+        sum_mvolt += analogReadMilliVolts(ADC_GPIO);
+#  endif
       }
       val = sum_val / NumberOfReadingsADC;
     }
@@ -75,8 +82,8 @@ void MeasureADC() {
 #  if defined(ADC_DIVIDER)
         float volt = 0;
 #    if defined(ESP32)
-        // Convert the analog reading (which goes from 0 - 4095) to a voltage (0 - 3.3V):
-        volt = val * (3.3 / 4096.0);
+        // Average of the calibrated millivolt readings, in volts at the pin
+        volt = (sum_mvolt / (float)NumberOfReadingsADC) / 1000.0;
 #    elif defined(ESP8266)
         // Convert the analog reading (which goes from 0 - 1024) to a voltage (0 - 3.3V):
         volt = val * (3.3 / 1024.0);

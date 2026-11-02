@@ -878,9 +878,14 @@ void pubMqttDiscovery() {
 #    include "config_ADC.h"
   THEENGS_LOG_TRACE(F("ADCDiscovery" CR));
   const char* ADCsensor[][13] = {
-      {HASS_TYPE_SENSOR, "ADC", "adc", "", jsonAdc, "", "", "", stateClassMeasurement, nullptr, nullptr, nullptr, nullptr}};
+      {HASS_TYPE_SENSOR, "ADC", "adc", "", jsonAdc, "", "", "", stateClassMeasurement, nullptr, nullptr, nullptr, nullptr},
+#    if defined(ADC_DIVIDER)
+      // volt is only published when a divider is defined, e.g. battery sensing boards
+      {HASS_TYPE_SENSOR, "ADC: Voltage", "adc-volt", HASS_CLASS_VOLTAGE, jsonVolt, "", "", HASS_UNIT_VOLT, stateClassMeasurement, nullptr, nullptr, nullptr, nullptr},
+#    endif
+  };
 
-  createDiscoveryFromList(nullptr, ADCsensor, 1, nullptr, nullptr, nullptr,
+  createDiscoveryFromList(nullptr, ADCsensor, sizeof(ADCsensor) / sizeof(ADCsensor[0]), nullptr, nullptr, nullptr,
                           true, ADCTOPIC, will_Topic, nullptr);
 #  endif
 

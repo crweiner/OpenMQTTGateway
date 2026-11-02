@@ -4,8 +4,13 @@ Subscribe to all the messages with mosquitto or open your MQTT client software:
 `    sudo mosquitto_sub -t +/# -v`
 
 ### ADC
-The value is between 0 and 1024 and is transmitted via MQTT when it changes.
-`home/OpenMQTTGateway/ADCtoMQTT {"value":543}`
+The raw reading (0-1023 on ESP8266, 0-4095 on ESP32) is transmitted via MQTT when it changes by more than `ThresholdReadingADC`, or every `MinTimeInSecBetweenPublishingADC` seconds if set (see config_ADC.h).
+`home/OpenMQTTGateway/ADCtoMQTT {"adc":543}`
+
+When `ADC_DIVIDER` is defined, the voltage before the divider is added in volts and Home Assistant discovery creates a voltage sensor. On ESP32 it uses the chip's factory ADC calibration.
+`home/OpenMQTTGateway/ADCtoMQTT {"adc":2350,"adc_reads":8,"volt":3.92}`
+
+The LILYGO LoRa32 V2.1 environments (`lilygo-rtl_433`, `lilygo-rtl_433-fsk`, `lilygo-ble`, `ttgo-lora32-v21`) and `ttgo-t-beam` enable this to report the LiPo battery voltage, read through the board's divider on GPIO35. Without a battery connected the reading follows the charger output and is not meaningful.
 
 ### DHT
 You will receive every TimeBetweenReadingDHT (set into config_DHT.h) the DHT measurement (30s per default).
